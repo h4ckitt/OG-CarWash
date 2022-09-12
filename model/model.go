@@ -13,12 +13,13 @@ type CarWash struct {
 }
 
 type Wash struct {
-	CarWashID   int    `json:"carWashID,omitempty"`
-	CarsEntered int    `json:"carsEntered,omitempty"`
-	NumberPlate string `json:"license"`
-	DateEntered string `json:"dateEntered,omitempty"`
-	TimeEntered string `json:"timeEntered"`
-	TimeLeft    string `json:"timeLeft"`
+	ClientNumber string `bson:"Phone number"`
+	CarWashID    int    `json:"carWashID,omitempty" bson:"Car wash id"`
+	CarsEntered  int    `json:"carsEntered,omitempty"`
+	NumberPlate  string `json:"license" bson:"Plate"`
+	DateEntered  string `json:"dateEntered,omitempty" bson:"Day entered"`
+	TimeEntered  string `json:"timeEntered" bson:"Time entered"`
+	TimeLeft     string `json:"timeLeft"`
 }
 
 type WebSocketResult struct {
