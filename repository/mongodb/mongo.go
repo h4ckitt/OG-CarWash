@@ -48,11 +48,12 @@ func (r Repo) RegisterOwner(owner model.Owner) error {
 
 func (r Repo) FetchDataByDate(date string) (model.WebSocketResult, error) {
 	//TODO implement me
-	clientResults := make(map[string][]model.Wash)
+	clientResults := make(map[string][]model.CarWashes)
+	carWashResults := make(map[int][]model.Wash)
 
 	savedCars := r.database.Collection("saved_cars")
 
-	res, err := savedCars.Find(context.Background(), bson.D{})
+	res, err := savedCars.Find(context.Background(), bson.D{{"Day entered", bson.D{{"$eq", date}}}})
 
 	if err != nil {
 		return model.WebSocketResult{}, err
@@ -67,10 +68,21 @@ func (r Repo) FetchDataByDate(date string) (model.WebSocketResult, error) {
 			return model.WebSocketResult{}, err
 		}
 
-		if _, exists := clientResults[w.ClientNumber]; !exists {
-			clientResults[w.ClientNumber] = make([]model.Wash, 0)
-		}
-		clientResults[w.ClientNumber] = append(clientResults[w.ClientNumber], w)
+		id := w.CarWashID
+
+		// Remove Fields We Don't Need From The Output JSON
+		w.DateEntered = ""
+		w.CarWashID = 0
+
+		carWashResults[id] = append(carWashResults[id], w)
+	}
+
+	for id, washes := range carWashResults {
+		clientResults[washes[0].ClientNumber] = append(clientResults[washes[0].ClientNumber], model.CarWashes{
+			CarWashID:   id,
+			CarsEntered: len(washes),
+			Cars:        washes,
+		})
 	}
 
 	var result model.WebSocketResult
