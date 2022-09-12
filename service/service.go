@@ -5,6 +5,7 @@ import (
 	"car_wash/repository"
 	"errors"
 	"log"
+	"time"
 )
 
 type CarWashSvc struct {
@@ -26,7 +27,14 @@ func (c CarWashSvc) RegisterNewOwner(owner model.Owner) error {
 }
 
 func (c CarWashSvc) FetchDataByDate(date string) (model.WebSocketResult, error) {
-	res, err := c.Repo.FetchDataByDate(date)
+
+	t, err := time.Parse("02.01.2006", date)
+
+	if err != nil {
+		return model.WebSocketResult{}, errors.New("invalid date specified")
+	}
+
+	res, err := c.Repo.FetchDataByDate(t.Format("2006-01-02"))
 
 	if err != nil {
 		log.Println(err)
