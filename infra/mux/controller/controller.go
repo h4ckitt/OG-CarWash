@@ -63,7 +63,14 @@ func (controller *Controller) UpgradeWss(w http.ResponseWriter, r *http.Request)
 			continue
 		}
 
-		if err = c.WriteJSON(controller.Service.FetchDataByDate(string(message))); err != nil {
+		res, err := controller.Service.FetchDataByDate(string(message))
+
+		if err != nil {
+			_ = c.WriteJSON(map[string]string{"message": "an error occurred, please try again"})
+			continue
+		}
+
+		if err = c.WriteJSON(res); err != nil {
 			log.Println(err)
 			continue
 		}
