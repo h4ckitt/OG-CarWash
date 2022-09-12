@@ -25,12 +25,12 @@ func (c CarWashSvc) RegisterNewOwner(owner model.Owner) error {
 	return errors.New("an error occurred while trying to register")
 }
 
-func (c CarWashSvc) FetchDataByDate(date string) model.WebSocketResult {
+func (c CarWashSvc) FetchDataByDate(date string) (model.WebSocketResult, error) {
 	res, err := c.Repo.FetchDataByDate(date)
 
 	if err != nil {
 		log.Println(err)
 	}
 
-	return res
+	return res, err
 }
