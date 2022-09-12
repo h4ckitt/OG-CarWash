@@ -12,13 +12,21 @@ type CarWash struct {
 	Address string `json:"carWashAddress"`
 }
 
+type CarWashes struct {
+	ClientNumber string `json:"-"`
+	CarWashID    int    `json:"carWashID"`
+	CarWashName  string `json:"carWashName"`
+	CarsEntered  int    `json:"carsEntered"`
+	Cars         []Wash `json:"cars"`
+}
+
 type Wash struct {
-	ClientNumber string `bson:"Phone number"`
+	ClientNumber string `json:"-" bson:"Phone number"`
 	CarWashID    int    `json:"carWashID,omitempty" bson:"Car wash id"`
 	CarsEntered  int    `json:"carsEntered,omitempty"`
 	NumberPlate  string `json:"license" bson:"Plate"`
 	DateEntered  string `json:"dateEntered,omitempty" bson:"Day entered"`
-	TimeEntered  string `json:"timeEntered" bson:"Time entered"`
+	TimeEntered  string `json:"enteredAt" bson:"Time entered"`
 	TimeLeft     string `json:"timeLeft"`
 }
 
@@ -28,7 +36,6 @@ type WebSocketResult struct {
 }
 
 type WebSocketClientResult struct {
-	ClientNumber string `json:"client"`
-	CarWashName  string `json:"CarWashName"`
-	Result       []Wash `json:"result"`
+	ClientNumber string      `json:"client"`
+	Result       []CarWashes `json:"result"`
 }
