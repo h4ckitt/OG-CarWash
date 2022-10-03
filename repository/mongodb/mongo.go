@@ -15,6 +15,21 @@ type Repo struct {
 	database *mongo.Database
 }
 
+func (r Repo) RetrieveAPIKey(uid string) (string, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r Repo) StoreAPIKey(uid string, key string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r Repo) UpdateAPIKey(uid string, key string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewMongoClient() (*Repo, error) {
 	var uri string
 	mongoConfig := config.GetConfig().MongoConfig
@@ -96,4 +111,9 @@ func (r Repo) FetchDataByDate(date string) (model.WebSocketResult, error) {
 		})
 	}
 	return result, nil
+}
+
+func (r Repo) VerifyAndRetrieveAPIKey(key string) (int, error) {
+	//TODO implement me
+	panic("implement me")
 }
