@@ -1,1 +1,4 @@
 .idea/
+.env
+og-car-wash-service-account.json
+car_wash_api
