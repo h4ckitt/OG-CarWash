@@ -1,9 +1,11 @@
 package model
 
 type Owner struct {
+	UUID        string    `json:"uuid"`
 	LastName    string    `json:"lastName"`
 	FirstName   string    `json:"firstName"`
 	PhoneNumber string    `json:"phoneNumber"`
+	Email       string    `json:"email"`
 	CarWashes   []CarWash `json:"carWashes"`
 }
 
@@ -13,17 +15,18 @@ type CarWash struct {
 }
 
 type CarWashes struct {
-	ClientNumber string `json:"-"`
-	CarWashID    int    `json:"carWashID"`
-	CarWashName  string `json:"carWashName"`
-	CarsEntered  int    `json:"carsEntered"`
-	Cars         []Wash `json:"cars"`
+	//ClientNumber string `json:"-"`
+	CarWashID   string `json:"carWashID"`
+	CarWashName string `json:"carWashName"`
+	CarsEntered int    `json:"carsEntered"`
+	Cars        []Wash `json:"cars"`
 }
 
 type Wash struct {
 	ClientNumber string `json:"-" bson:"Phone number"`
-	CarWashID    int    `json:"carWashID,omitempty" bson:"Car wash id"`
+	CarWashID    string `json:"carWashID,omitempty" bson:"Car wash id"`
 	CarsEntered  int    `json:"carsEntered,omitempty"`
+	CarWashName  string `json:"-"`
 	NumberPlate  string `json:"license" bson:"Plate"`
 	DateEntered  string `json:"dateEntered,omitempty" bson:"Day entered"`
 	TimeEntered  string `json:"enteredAt" bson:"Time entered"`
@@ -31,8 +34,8 @@ type Wash struct {
 }
 
 type WebSocketResult struct {
-	Date    string                  `json:"date"`
-	Clients []WebSocketClientResult `json:"clients"`
+	Date    string                `json:"date"`
+	Clients WebSocketClientResult `json:"clients"`
 }
 
 type WebSocketClientResult struct {
