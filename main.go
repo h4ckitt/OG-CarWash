@@ -2,9 +2,10 @@ package main
 
 import (
 	"car_wash/config"
+	"car_wash/infra/auth/authenticator"
 	"car_wash/infra/mux/controller"
 	"car_wash/infra/mux/router"
-	"car_wash/repository/mongodb"
+	"car_wash/repository/postgres"
 	"car_wash/service"
 	"fmt"
 	"log"
@@ -28,7 +29,14 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	repo, err := mongodb.NewMongoClient()
+	//repo, err := mongodb.NewMongoClient()
+	repo, err := postgres.NewPostgresRepo()
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	auth, err := authenticator.NewAuthenticator(repo)
 
 	if err != nil {
 		log.Fatalln(err)
@@ -36,9 +44,11 @@ func main() {
 
 	ctrl := controller.NewController(service.NewService(repo))
 
+	r := router.InitRouter(ctrl, auth)
+
 	log.Println("Starting Server ......")
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", os.Args[1]), router.InitRouter(ctrl)); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", os.Args[1]), r); err != nil {
 		log.Panicln(err)
 	}
 
