@@ -1,8 +1,9 @@
 package config
 
 type Config struct {
-	PGConfig    PostgresConfig
-	MongoConfig MongoConfig
+	PGConfig       PostgresConfig
+	MongoConfig    MongoConfig
+	FirebaseConfig FirebaseConfig
 }
 
 type PostgresConfig struct {
@@ -19,4 +20,8 @@ type MongoConfig struct {
 	DatabasePassword string
 	DatabaseHost     string
 	DatabasePort     string
+}
+
+type FirebaseConfig struct {
+	ServiceFileName string
 }

@@ -29,6 +29,9 @@ func Load() error {
 			DatabaseName:     os.Getenv("MG_NAME"),
 			DatabaseHost:     os.Getenv("MG_HOST"),
 		},
+		FirebaseConfig: FirebaseConfig{
+			ServiceFileName: os.Getenv("FIREBASE_SERVICE_JSON"),
+		},
 	}
 
 	return nil
