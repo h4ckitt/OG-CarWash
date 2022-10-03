@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"car_wash/apperror"
+	"car_wash/infra/mux/helper"
 	"car_wash/model"
 	"car_wash/service"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -20,26 +23,65 @@ func NewController(svc service.Svc) *Controller {
 	return &Controller{svc}
 }
 
+func (controller *Controller) CheckHash(w http.ResponseWriter, r *http.Request) {
+	hash := mux.Vars(r)["hash"]
+
+	if hash == "" {
+		helper.ReturnFailure(w, &apperror.BadRequest)
+		return
+	}
+
+	key, err := controller.Service.CheckCreds(hash)
+
+	if err != nil {
+		helper.ReturnFailure(w, err)
+		return
+	}
+
+	helper.ReturnSuccess(w, map[string]string{"apiKey": key})
+}
+
+func (controller *Controller) AddCredsToJar(w http.ResponseWriter, r *http.Request) {
+
+	h := struct {
+		Hash string `json:"hash"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&h); err != nil {
+		helper.ReturnFailure(w, &apperror.BadRequest)
+		return
+	}
+
+	err := controller.Service.CacheCreds(r.Context(), h.Hash)
+
+	if err != nil {
+		helper.ReturnFailure(w, err)
+	}
+}
+
 func (controller *Controller) RegisterNewOwner(w http.ResponseWriter, r *http.Request) {
 	var owner model.Owner
 
 	if err := json.NewDecoder(r.Body).Decode(&owner); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "bad request received"})
-	}
-
-	err := controller.Service.RegisterNewOwner(owner)
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": "internal server error"})
+		helper.ReturnFailure(w, &apperror.BadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	key, err := controller.Service.RegisterNewOwner(r.Context(), owner)
+
+	if err != nil {
+		helper.ReturnFailure(w, err)
+		return
+	}
+
+	helper.ReturnSuccess(w, map[string]string{"apiKey": key})
+
+	//w.WriteHeader(http.StatusCreated)
 }
 
 func (controller *Controller) UpgradeWss(w http.ResponseWriter, r *http.Request) {
+	updatesChan := controller.Service.GetUpdatesChannel(r.Context())
+
 	c, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
@@ -49,6 +91,12 @@ func (controller *Controller) UpgradeWss(w http.ResponseWriter, r *http.Request)
 
 	defer func() { _ = c.Close() }()
 
+	go func() {
+		for {
+			_ = c.WriteJSON(<-updatesChan)
+		}
+	}()
+
 	for {
 		_, message, err := c.ReadMessage()
 
@@ -57,13 +105,13 @@ func (controller *Controller) UpgradeWss(w http.ResponseWriter, r *http.Request)
 			break
 		}
 
-		log.Printf("Received: %s", message)
+		//log.Printf("Received: %s", message)
 
 		if match, err := regexp.MatchString("^(?:[0-9]{2}.){2}[0-9]{4}$", string(message)); err != nil || !match {
 			continue
 		}
 
-		res, err := controller.Service.FetchDataByDate(string(message))
+		res, err := controller.Service.FetchDataByDate(r.Context(), string(message))
 
 		if err != nil {
 			_ = c.WriteJSON(map[string]string{"message": "an error occurred, please try again"})
@@ -76,3 +124,39 @@ func (controller *Controller) UpgradeWss(w http.ResponseWriter, r *http.Request)
 		}
 	}
 }
+
+func (controller *Controller) RegisterCarWash(w http.ResponseWriter, r *http.Request) {
+	var carwash model.CarWash
+
+	if err := json.NewDecoder(r.Body).Decode(&carwash); err != nil {
+		helper.ReturnFailure(w, &apperror.BadRequest)
+		return
+	}
+
+	id, err := controller.Service.RegisterCarWash(r.Context(), carwash)
+
+	if err != nil {
+		helper.ReturnFailure(w, err)
+		return
+	}
+
+	helper.ReturnSuccess(w, map[string]string{"message": "created successfully", "id": id})
+}
+
+func (controller *Controller) RegisterWash(w http.ResponseWriter, r *http.Request) {
+	var wash model.Wash
+
+	if err := json.NewDecoder(r.Body).Decode(&wash); err != nil {
+		helper.ReturnFailure(w, &apperror.BadRequest)
+		return
+	}
+
+	err := controller.Service.SaveWashDetails(r.Context(), wash)
+
+	if err != nil {
+		helper.ReturnFailure(w, err)
+		return
+	}
+}
+
+//func (controller *Controller)
