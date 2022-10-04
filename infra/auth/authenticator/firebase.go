@@ -11,6 +11,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
 	"google.golang.org/api/option"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -55,15 +56,15 @@ func (auth Authenticator) BearerAuth(next http.Handler) http.Handler {
 		if strings.HasPrefix(bearerToken, "Bearer") {
 			bearerToken = strings.TrimSpace(strings.Replace(bearerToken, "Bearer", "", 1))
 
-			/*uid, err := auth.VerifyBearer(bearerToken)
+			uid, err := auth.VerifyBearer(bearerToken)
 
 			if err != nil {
 				log.Println(err)
 				helper.ReturnFailure(w, &apperror.Unauthorized)
 				return
 			}
-			ctx := context.WithValue(context.Background(), "UID", uid)*/
-			ctx := context.WithValue(context.Background(), "UID", "4KzLpODPIfPIWL1BGZ23hiEUk9W2")
+			ctx := context.WithValue(context.Background(), "UID", uid)
+			//ctx := context.WithValue(context.Background(), "UID", "4KzLpODPIfPIWL1BGZ23hiEUk9W2")
 			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
