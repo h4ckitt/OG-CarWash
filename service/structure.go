@@ -4,7 +4,6 @@ import (
 	"car_wash/apperror"
 	"car_wash/model"
 	"context"
-	"log"
 	"time"
 )
 
@@ -113,13 +112,12 @@ func (c *updatesStore) Get(uid string) <-chan model.Wash {
 
 	c.Lock()
 
-	log.Println("Locked")
-
 	ch, exists := c.updatesChan[uid]
 
 	if !exists {
 		ch = &update{
 			userChan: make(chan model.Wash),
+			lastUsed: time.Now().Unix(),
 		}
 		c.updatesChan[uid] = ch
 	}
