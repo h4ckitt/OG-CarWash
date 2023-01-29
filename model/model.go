@@ -1,5 +1,7 @@
 package model
 
+import "mime/multipart"
+
 type Owner struct {
 	UUID        string    `json:"uuid"`
 	LastName    string    `json:"lastName"`
@@ -27,6 +29,9 @@ type Wash struct {
 	CarWashID    string `json:"carWashID,omitempty" bson:"Car wash id"`
 	CarsEntered  int    `json:"carsEntered,omitempty"`
 	CarWashName  string `json:"-"`
+	ImageName    string
+	ImageExt     string
+	Image        multipart.File
 	NumberPlate  string `json:"license" bson:"Plate"`
 	DateEntered  string `json:"dateEntered,omitempty" bson:"Day entered"`
 	TimeEntered  string `json:"enteredAt" bson:"Time entered"`
