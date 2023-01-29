@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"os"
 )
 
@@ -32,6 +33,27 @@ func Load() error {
 		FirebaseConfig: FirebaseConfig{
 			ServiceFileName: os.Getenv("FIREBASE_SERVICE_JSON"),
 		},
+		ImageConfig: ImageConfig{
+			Template: func() string {
+				if prefix := os.Getenv("IMAGE_PREFIX"); prefix != "" {
+					return prefix
+				}
+				return "license-capture"
+			}(),
+			Location: os.Getenv("IMAGE_STORAGE_LOCATION"),
+		},
+		RunConfig: RunConfig{
+			Port: func() string {
+				if port := os.Getenv("PORT"); port != "" {
+					return port
+				}
+				return "8080"
+			}(),
+		},
+	}
+
+	if conf.ImageConfig.Location == "" {
+		return errors.New("No Image Storage Location Set")
 	}
 
 	return nil
