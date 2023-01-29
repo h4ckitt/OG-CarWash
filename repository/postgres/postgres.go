@@ -5,8 +5,10 @@ import (
 	"car_wash/config"
 	"car_wash/model"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -19,7 +21,7 @@ type Repo struct {
 const (
 	RETRIEVECARWASHESBYOWNERUID    = "SELECT id FROM car_washes WHERE owner_id = $1"
 	RETRIEVECARWASHOWNERUID        = "SELECT owner_id FROM car_washes WHERE id = $1"
-	INSERTWASHDETAILS              = "INSERT INTO cars_washed (car_wash_id, license, date) VALUES ($1, $2, $3)"
+	INSERTWASHDETAILS              = "INSERT INTO cars_washed (car_wash_id, license,img_file_path, date) VALUES ($1, $2, $3, $4)"
 	RETRIEVEUSERWITHAPIKEY         = "SELECT user_id FROM api_keys WHERE key = $1"
 	RETRIEVEAPIKEYWITHUID          = "SELECT key FROM api_keys WHERE user_id = $1"
 	CHECKUSEREXISTENCEBEFOREINSERT = "SELECT EXISTS(SELECT 1 FROM owners WHERE id = $1)"
@@ -336,11 +338,17 @@ func (r Repo) SaveWashDetails(uid string, wash model.Wash) error {
 		return &apperror.Unauthorized
 	}
 
-	_, err := r.conn.Exec(INSERTWASHDETAILS, wash.CarWashID, wash.NumberPlate, wash.DateEntered)
+	_, err := r.conn.Exec(INSERTWASHDETAILS, wash.CarWashID, wash.NumberPlate, wash.ImageName, wash.DateEntered)
 
 	if err != nil {
-		e := &apperror.ServerError
-		e.Wrap(err)
+		var e *apperror.AppError
+		if strings.Contains(err.Error(), "img_uniq") {
+			e = &apperror.UnprocessableEntity
+			e.Wrap(errors.New("duplicate record with timestamp passed"))
+		} else {
+			e = &apperror.ServerError
+			e.Wrap(err)
+		}
 		return e
 	}
 
