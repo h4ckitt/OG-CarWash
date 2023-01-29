@@ -4,6 +4,8 @@ type Config struct {
 	PGConfig       PostgresConfig
 	MongoConfig    MongoConfig
 	FirebaseConfig FirebaseConfig
+	ImageConfig    ImageConfig
+	RunConfig      RunConfig
 }
 
 type PostgresConfig struct {
@@ -24,4 +26,13 @@ type MongoConfig struct {
 
 type FirebaseConfig struct {
 	ServiceFileName string
+}
+
+type ImageConfig struct {
+	Template string
+	Location string
+}
+
+type RunConfig struct {
+	Port string
 }
