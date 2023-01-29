@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 type Controller struct {
@@ -144,14 +145,31 @@ func (controller *Controller) RegisterCarWash(w http.ResponseWriter, r *http.Req
 }
 
 func (controller *Controller) RegisterWash(w http.ResponseWriter, r *http.Request) {
-	var wash model.Wash
 
-	if err := json.NewDecoder(r.Body).Decode(&wash); err != nil {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		helper.ReturnFailure(w, &apperror.BadRequest)
 		return
 	}
 
-	err := controller.Service.SaveWashDetails(r.Context(), wash)
+	wash := model.Wash{
+		CarWashID:   r.FormValue("carWashID"),
+		NumberPlate: r.FormValue("license"),
+		DateEntered: r.FormValue("dateEntered"),
+	}
+
+	file, header, err := r.FormFile("image")
+
+	if err != nil {
+		helper.ReturnFailure(w, &apperror.BadRequest)
+		return
+	}
+
+	fileBits := strings.Split(header.Filename, ".")
+
+	wash.ImageExt = fileBits[len(fileBits)-1]
+	wash.Image = file
+
+	err = controller.Service.SaveWashDetails(r.Context(), wash)
 
 	if err != nil {
 		helper.ReturnFailure(w, err)
