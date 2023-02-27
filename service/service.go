@@ -113,10 +113,10 @@ func (c CarWashSvc) CreateAPIKey(ctx context.Context) (string, error) {
 }
 
 func (c CarWashSvc) SaveWashDetails(ctx context.Context, wash model.Wash) error {
-	if !uzbekPlateRegex.MatchString(wash.NumberPlate) {
+	/*if !uzbekPlateRegex.MatchString(wash.NumberPlate) {
 		log.Println("Unsupported plate format")
 		return &apperror.UnprocessableEntity
-	}
+	}*/
 
 	id := ctx.Value("ID").(string)
 
