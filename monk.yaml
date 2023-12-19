@@ -1,0 +1,130 @@
+namespace: OG-CarWash
+
+postgres:
+  defines: runnable
+  inherits: postgresql/db
+  metadata:
+    name: postgres
+    description: PostgreSQL database used by the backend service.
+    icon: https://www.postgresql.org/media/img/about/press/elephant.png
+  variables:
+    db_name:
+      type: string
+      value: monk
+      description: ''
+    db_pass:
+      type: string
+      value: adminpassword
+      description: ''
+    db_user:
+      type: string
+      value: monk
+      description: ''
+
+backend-server:
+  defines: runnable
+  metadata:
+    name: backend-server
+    description: A Go backend service that serves as a web server.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    backend-server:
+      image: env-4404.registry.local/backend-server:master-17cd0f4
+      build: .
+      dockerfile: Dockerfile.backend-server
+  services:
+    http-server:
+      description: HTTP server listening on this port
+      container: backend-server
+      port: $port
+      host-port: $port
+      publish: true
+      protocol: tcp
+  connections:
+    postgres-database:
+      target: OG-CarWash/postgres
+      service: postgres
+      optional: true
+      description: Connection to the PostgreSQL database
+    firebase-authentication:
+      target: OG-CarWash/firebase-auth
+      service: auth
+      optional: true
+      description: Connection to Firebase for authentication services
+  variables:
+    pg-host:
+      env: PG_HOST
+      type: string
+      value: <- connection-hostname("postgres-database")
+      description: Hostname for the PostgreSQL database
+    pg-port:
+      env: PG_PORT
+      type: string
+      value: <- connection-port("postgres-database")
+      description: Port for the PostgreSQL database
+    pg-user:
+      env: PG_USER
+      type: string
+      value: monk
+      description: Username for the PostgreSQL database
+    pg-pass:
+      env: PG_PASS
+      type: string
+      value: adminpassword
+      description: Password for the PostgreSQL database
+    pg-name:
+      env: PG_NAME
+      type: string
+      value: monk
+      description: Database name for the PostgreSQL database
+    port:
+      env: PORT
+      type: string
+      value: '8080'
+      description: Port on which the backend server runs
+    firebase-service-json:
+      env: FIREBASE_SERVICE_JSON
+      type: string
+      value: dummy_firebase_service_json_content
+      description: Firebase service account JSON
+    image-storage-location:
+      env: IMAGE_STORAGE_LOCATION
+      type: string
+      value: /tmp/images
+      description: Location for storing images
+    mg-user:
+      env: MG_USER
+      type: string
+      value: user
+      description: Username for the MongoDB database
+    mg-pass:
+      env: MG_PASS
+      type: string
+      value: password
+      description: Password for the MongoDB database
+    mg-port:
+      env: MG_PORT
+      type: string
+      value: '27017'
+      description: Port for the MongoDB database
+    mg-name:
+      env: MG_NAME
+      type: string
+      value: dbname
+      description: Database name for the MongoDB database
+    mg-host:
+      env: MG_HOST
+      type: string
+      value: localhost
+      description: Hostname for the MongoDB database
+    image-prefix:
+      env: IMAGE_PREFIX
+      type: string
+      value: http://localhost:8080/images/
+      description: Prefix for image storage
+
+stack:
+  defines: group
+  members:
+    - OG-CarWash/postgres
+    - OG-CarWash/backend-server
